@@ -1,0 +1,28 @@
+<view class="mask {{visible ? 'show' : ''}}" bindtap="onClose">
+  <view class="panel" catchtap="noop">
+    <view class="panel-head">
+      <text class="panel-title">{{dateLabel}}</text>
+      <view class="rest-toggle {{isRest ? 'on' : ''}}" catchtap="onToggleRest">
+        <view class="dot"></view>
+        <text>{{isRest ? '已设休息日' : '标记休息日'}}</text>
+      </view>
+    </view>
+
+    <textarea
+      class="note-input"
+      placeholder="记录今日身体感受，如疼痛程度、疲劳感、进步…"
+      placeholder-class="ph"
+      value="{{draft}}"
+      bindinput="onInput"
+      auto-height
+      maxlength="200"
+      adjust-position
+      show-confirm-bar="{{false}}"></textarea>
+    <view class="hint">{{draft.length}}/200 · 休息日不计入完成率</view>
+
+    <view class="panel-foot">
+      <view class="btn ghost" bindtap="onClose">取消</view>
+      <view class="btn primary" bindtap="onSave">保存</view>
+    </view>
+  </view>
+</view>

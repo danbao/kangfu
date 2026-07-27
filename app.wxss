@@ -1,0 +1,42 @@
+/* 全局样式与设计令牌（CSS 变量） */
+page {
+  /* 主色：浅粉系 */
+  --color-pink-light: #FCE4EC;
+  --color-pink: #F8BBD0;
+  --color-pink-deep: #F48FB1;
+  /* 中性：浅灰系 */
+  --color-bg: #FAFBFC;
+  --color-grey-bg: #F5F5F5;
+  --color-grey-border: #ECEFF1;
+  --color-grey-icon: #B0BEC5;
+  /* 文字：深灰系 */
+  --color-text: #424242;
+  --color-text-secondary: #555555;
+  --color-text-light: #9E9E9E;
+  /* 圆角 */
+  --radius-sm: 8rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 24rpx;
+  /* 间距 */
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 28rpx;
+  -webkit-font-smoothing: antialiased;
+}
+
+view, text, scroll-view {
+  box-sizing: border-box;
+}
+
+/* 文本省略工具类 */
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

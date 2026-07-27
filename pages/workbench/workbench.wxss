@@ -1,0 +1,354 @@
+/* 工作台页面样式：左右分栏、行高对齐、网格、拖拽、表头、弹层 */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-bg);
+}
+
+/* 工作区滚动容器 */
+.matrix-scroll {
+  flex: 1;
+  min-height: 0;
+}
+.matrix-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+/* ---------- 左列：项目列表 ---------- */
+.left-panel {
+  width: 220rpx;
+  flex: 0 0 220rpx;
+  background: #fff;
+  border-right: 1rpx solid var(--color-grey-border);
+}
+.header-spacer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: var(--color-text-light);
+  border-bottom: 1rpx solid var(--color-grey-border);
+  background: #fff;
+}
+.exercise-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 0 14rpx;
+  border-bottom: 1rpx solid var(--color-grey-border);
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+  will-change: transform;
+}
+.exercise-row.is-dragging {
+  box-shadow: 0 10rpx 28rpx rgba(0, 0, 0, 0.16);
+  background: var(--color-pink-light);
+  z-index: 10;
+  opacity: 0.98;
+}
+.ex-icon {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background-color: var(--color-grey-bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 34rpx 34rpx;
+}
+.ex-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 26rpx;
+  color: var(--color-text);
+}
+/* 拖拽手柄（柔和两列圆点） */
+.drag-handle {
+  width: 14rpx;
+  height: 22rpx;
+  flex: 0 0 auto;
+  background-image: radial-gradient(circle, var(--color-grey-icon) 1.5rpx, transparent 2rpx);
+  background-size: 6rpx 8rpx;
+  background-repeat: repeat;
+  opacity: 0.6;
+}
+
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 0 16rpx;
+  color: var(--color-text-light);
+  font-size: 26rpx;
+  border-bottom: 1rpx solid var(--color-grey-border);
+}
+.add-plus {
+  font-size: 34rpx;
+  color: var(--color-pink-deep);
+  line-height: 1;
+}
+.add-text {
+  font-size: 24rpx;
+}
+
+/* ---------- 右列：日期矩阵 ---------- */
+.right-panel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  background: #fff;
+}
+.right-scroll {
+  width: 100%;
+}
+.matrix-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 日期表头 */
+.date-header {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1rpx solid var(--color-grey-border);
+}
+.date-cell {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.date-cell .d {
+  font-size: 26rpx;
+  color: var(--color-text);
+}
+.date-cell .w {
+  font-size: 18rpx;
+  color: var(--color-text-light);
+  margin-top: 2rpx;
+}
+.date-cell.is-today .d {
+  color: var(--color-pink-deep);
+  font-weight: 600;
+}
+.date-cell.is-rest {
+  background: var(--color-grey-bg);
+}
+.date-cell.is-focus {
+  background: var(--color-pink);
+}
+.date-cell.is-focus .d {
+  color: #fff;
+  font-weight: 600;
+}
+.date-cell.is-focus .w {
+  color: rgba(255, 255, 255, 0.85);
+}
+/* 编辑入口角标（铅笔尖） */
+.pencil {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 10rpx;
+  height: 10rpx;
+  border-left: 2rpx solid var(--color-grey-icon);
+  border-bottom: 2rpx solid var(--color-grey-icon);
+  transform: rotate(-45deg);
+  opacity: 0.45;
+}
+
+/* 矩阵行：与左列 exercise-row 同高、同盒模型 */
+.matrix-row {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1rpx solid var(--color-grey-border);
+}
+.cell {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1rpx solid var(--color-grey-border);
+}
+.cell.is-today-col {
+  background: rgba(248, 187, 208, 0.1);
+}
+.cell.rest {
+  background: var(--color-grey-bg);
+}
+/* 打卡格 */
+.check {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 12rpx;
+  border: 2rpx solid var(--color-grey-border);
+  background: #fff;
+  position: relative;
+}
+.cell.done .check {
+  background: var(--color-pink-light);
+  border-color: var(--color-pink);
+}
+.cell.done .check::after {
+  content: '';
+  position: absolute;
+  left: 14rpx;
+  top: 12rpx;
+  width: 12rpx;
+  height: 7rpx;
+  border-left: 3rpx solid var(--color-pink-deep);
+  border-bottom: 3rpx solid var(--color-pink-deep);
+  transform: rotate(-45deg);
+}
+.cell.rest .check {
+  background: transparent;
+  border-style: dashed;
+  border-color: #D6D6D6;
+}
+
+/* ---------- 拖拽 capture 层 ---------- */
+.drag-capture {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: transparent;
+}
+
+/* ---------- 空态 ---------- */
+.empty {
+  padding: 100rpx 48rpx;
+  text-align: center;
+  color: var(--color-text-light);
+  font-size: 26rpx;
+}
+.empty-icon {
+  width: 96rpx;
+  height: 96rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 50%;
+  background: var(--color-pink-light);
+  position: relative;
+}
+.empty-icon::after {
+  content: '+';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+  color: var(--color-pink-deep);
+  font-weight: 300;
+}
+
+/* ---------- 项目编辑弹层 ---------- */
+.mask {
+  position: fixed;
+  inset: 0;
+  z-index: 850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  background: rgba(66, 66, 66, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, background 0.2s;
+}
+.mask.show {
+  opacity: 1;
+  pointer-events: auto;
+  background: rgba(66, 66, 66, 0.4);
+}
+.edit-panel {
+  width: 100%;
+  max-width: 620rpx;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 34rpx;
+  transform: scale(0.9);
+  transition: transform 0.25s ease;
+}
+.mask.show .edit-panel {
+  transform: scale(1);
+}
+.edit-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 24rpx;
+}
+.edit-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 22rpx;
+  background: var(--color-grey-bg);
+  border-radius: var(--radius-md);
+  font-size: 28rpx;
+  color: var(--color-text);
+}
+.ph {
+  color: var(--color-text-light);
+}
+.edit-label {
+  font-size: 24rpx;
+  color: var(--color-text-light);
+  margin: 26rpx 0 16rpx;
+}
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18rpx;
+}
+.icon-item {
+  width: 82rpx;
+  height: 82rpx;
+  border-radius: var(--radius-md);
+  background: var(--color-grey-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-item.on {
+  background: var(--color-pink-light);
+  box-shadow: inset 0 0 0 3rpx var(--color-pink);
+}
+.icon-img {
+  width: 44rpx;
+  height: 44rpx;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.edit-foot {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 34rpx;
+}
+.edit-foot .btn {
+  flex: 1;
+  text-align: center;
+  padding: 22rpx 0;
+  border-radius: var(--radius-md);
+  font-size: 28rpx;
+}
+.btn.danger {
+  flex: 0 0 160rpx;
+  background: #FFEBEE;
+  color: #E53935;
+}
+.btn.ghost {
+  background: var(--color-grey-bg);
+  color: var(--color-text-secondary);
+}
+.btn.primary {
+  background: var(--color-pink);
+  color: #fff;
+}

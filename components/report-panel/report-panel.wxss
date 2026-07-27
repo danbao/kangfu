@@ -1,0 +1,71 @@
+.mask {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  background: rgba(66, 66, 66, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, background 0.2s;
+}
+.mask.show {
+  opacity: 1;
+  pointer-events: auto;
+  background: rgba(66, 66, 66, 0.5);
+}
+
+.wrap {
+  width: 660rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(0.92);
+  transition: transform 0.25s ease;
+}
+.mask.show .wrap {
+  transform: scale(1);
+}
+
+.card {
+  width: 660rpx;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 16rpx;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.18);
+}
+.canvas {
+  width: 628rpx;
+  height: 1200rpx;
+  display: block;
+}
+
+.actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 30rpx;
+  width: 660rpx;
+}
+.act {
+  flex: 1;
+  text-align: center;
+  padding: 22rpx 0;
+  border-radius: var(--radius-md);
+  font-size: 28rpx;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text-secondary);
+}
+.act.primary {
+  background: var(--color-pink);
+  color: #fff;
+}
+
+.close {
+  margin-top: 22rpx;
+  color: #fff;
+  font-size: 26rpx;
+  padding: 14rpx 44rpx;
+}

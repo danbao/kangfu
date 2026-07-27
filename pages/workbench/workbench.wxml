@@ -1,0 +1,155 @@
+<view class="page">
+
+  <!-- 顶部统计栏 -->
+  <stats-bar
+    focus-label="{{focusLabel}}"
+    done="{{done}}"
+    total="{{total}}"
+    rate="{{rate}}"
+    is-rest="{{isRest}}"
+    range-rate="{{rangeRate}}"
+    range-label="{{rangeLabel}}"
+    view-mode="{{viewMode}}"
+    bind:toggleView="onToggleView"
+    bind:openReport="onOpenReport"></stats-bar>
+
+  <!-- 工作区（拖拽时关闭纵向滚动） -->
+  <scroll-view class="matrix-scroll" scroll-y="{{!isDragging}}" enhanced show-scrollbar="{{false}}">
+
+    <view class="matrix-container">
+
+      <!-- 左列：训练项目 -->
+      <view class="left-panel">
+        <view class="header-spacer" style="height:{{HEADER_H}}px">项目</view>
+
+        <view
+          wx:for="{{exercises}}" wx:key="id"
+          class="exercise-row {{draggingIndex === index ? 'is-dragging' : ''}}"
+          style="height:{{ROW_H}}px;transform:translateY({{draggingIndex === index ? translateY : (shifts[index] || 0)}}px);transition:{{draggingIndex === index ? 'none' : 'transform .18s ease'}};"
+          data-index="{{index}}"
+          data-id="{{item.id}}"
+          bindtap="onEditExercise"
+          bindlongpress="onRowLongPress">
+          <view class="ex-icon" style="background-image:url('{{item.iconUri}}')"></view>
+          <text class="ex-name ellipsis">{{item.name}}</text>
+          <view class="drag-handle"></view>
+        </view>
+
+        <view class="add-row" style="height:{{ROW_H}}px" bindtap="onAddExercise">
+          <text class="add-plus">+</text>
+          <text class="add-text">新增项目</text>
+        </view>
+      </view>
+
+      <!-- 右列：日期打卡矩阵 -->
+      <view class="right-panel">
+        <scroll-view
+          class="right-scroll"
+          scroll-x
+          enable-flex
+          enhanced
+          show-scrollbar="{{false}}"
+          scroll-into-view="{{scrollIntoView}}">
+          <view class="matrix-inner" style="width:{{matrixWidth}}px">
+
+            <!-- 日期表头 -->
+            <view class="date-header" style="height:{{HEADER_H}}px">
+              <view
+                wx:for="{{dates}}" wx:key="key"
+                class="date-cell {{item.isToday ? 'is-today' : ''}} {{item.isRest ? 'is-rest' : ''}} {{focusDate === item.key ? 'is-focus' : ''}}"
+                style="width:{{CELL_W}}px"
+                id="{{item.isToday ? 'today-anchor' : ''}}"
+                data-date="{{item.key}}"
+                bindtap="onTapDate"
+                bindlongpress="onOpenNote">
+                <text class="d">{{item.d}}</text>
+                <text class="w">{{item.weekday}}</text>
+                <view class="pencil"></view>
+              </view>
+            </view>
+
+            <!-- 矩阵行：与左列同源遍历 exercises -->
+            <view
+              wx:for="{{exercises}}" wx:key="id"
+              class="matrix-row" style="height:{{ROW_H}}px">
+              <view
+                wx:for="{{dates}}" wx:for-item="dt" wx:key="key"
+                class="cell {{records[dt.key][item.id] ? 'done' : ''}} {{dt.isRest ? 'rest' : ''}} {{dt.isToday ? 'is-today-col' : ''}}"
+                style="width:{{CELL_W}}px"
+                data-date="{{dt.key}}"
+                data-ex="{{item.id}}"
+                bindtap="onToggleCell">
+                <view class="check"></view>
+              </view>
+            </view>
+
+          </view>
+        </scroll-view>
+      </view>
+
+    </view>
+
+    <!-- 空态 -->
+    <view wx:if="{{exercises.length === 0}}" class="empty">
+      <view class="empty-icon"></view>
+      <text>还没有训练项目，点击「新增项目」开始打卡吧</text>
+    </view>
+
+  </scroll-view>
+
+  <!-- 拖拽 capture 层：全屏接管触摸，杜绝事件断流 -->
+  <view
+    wx:if="{{isDragging}}"
+    class="drag-capture"
+    catchtouchmove="onDragMove"
+    catchtouchend="onDragEnd"></view>
+
+  <!-- 备注面板 -->
+  <note-panel
+    visible="{{noteVisible}}"
+    date-label="{{noteDateLabel}}"
+    note="{{noteText}}"
+    is-rest="{{noteIsRest}}"
+    bind:save="onSaveNote"
+    bind:toggleRest="onToggleRest"
+    bind:close="onCloseNote"></note-panel>
+
+  <!-- 月度报告 -->
+  <report-panel
+    visible="{{reportVisible}}"
+    report="{{reportData}}"
+    bind:close="onCloseReport"></report-panel>
+
+  <!-- 项目新增/编辑弹层 -->
+  <view class="mask {{editVisible ? 'show' : ''}}" bindtap="onCloseEdit">
+    <view class="edit-panel" catchtap="noop">
+      <view class="edit-title">{{editMode === 'edit' ? '编辑项目' : '新增训练项目'}}</view>
+
+      <input
+        class="edit-input"
+        placeholder="训练项目名称"
+        placeholder-class="ph"
+        value="{{editName}}"
+        bindinput="onEditName"
+        maxlength="12"></input>
+
+      <view class="edit-label">选择图标</view>
+      <view class="icon-grid">
+        <view
+          wx:for="{{iconChoices}}" wx:key="key"
+          class="icon-item {{item.selected ? 'on' : ''}}"
+          data-key="{{item.key}}"
+          bindtap="onPickIcon">
+          <view class="icon-img" style="background-image:url('{{item.uri}}')"></view>
+        </view>
+      </view>
+
+      <view class="edit-foot">
+        <view wx:if="{{editMode === 'edit'}}" class="btn danger" data-id="{{editingId}}" bindtap="onDeleteExercise">删除</view>
+        <view class="btn ghost" bindtap="onCloseEdit">取消</view>
+        <view class="btn primary" bindtap="onSaveExercise">保存</view>
+      </view>
+    </view>
+  </view>
+
+</view>

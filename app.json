@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/workbench/workbench"
+  ],
+  "window": {
+    "navigationBarTitleText": "康复打卡",
+    "navigationBarBackgroundColor": "#FCE4EC",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#FAFBFC",
+    "backgroundTextStyle": "dark"
+  },
+  "usingComponents": {},
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

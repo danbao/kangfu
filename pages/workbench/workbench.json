@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "stats-bar": "/components/stats-bar/stats-bar",
+    "note-panel": "/components/note-panel/note-panel",
+    "report-panel": "/components/report-panel/report-panel"
+  },
+  "navigationStyle": "default"
+}

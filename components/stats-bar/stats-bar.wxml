@@ -1,0 +1,29 @@
+<view class="stats-bar">
+  <view class="stats-main">
+    <view class="stats-date">{{focusLabel}}</view>
+    <view class="stats-row">
+      <view class="stat">
+        <view class="stat-num">{{done}}<text class="stat-unit">/{{total}}</text></view>
+        <view class="stat-label">已完成</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{rateText}}</view>
+        <view class="stat-label">完成率</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{rangeText}}</view>
+        <view class="stat-label">{{rangeLabel}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="stats-actions">
+    <view class="seg">
+      <view class="seg-item {{viewMode === 'week' ? 'on' : ''}}" data-mode="week" bindtap="onTapView">周</view>
+      <view class="seg-item {{viewMode === 'month' ? 'on' : ''}}" data-mode="month" bindtap="onTapView">月</view>
+    </view>
+    <view class="report-btn" bindtap="onTapReport">
+      <view class="report-icon"></view>
+    </view>
+  </view>
+</view>

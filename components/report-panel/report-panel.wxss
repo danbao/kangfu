@@ -20,9 +20,10 @@
 
 .wrap {
   width: 660rpx;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   transform: scale(0.92);
   transition: transform 0.25s ease;
 }
@@ -30,11 +31,31 @@
   transform: scale(1);
 }
 
+/* 关闭按钮：在 wrap 外，直接响应 mask 的 bindtap */
+.top-close {
+  color: #fff;
+  font-size: 28rpx;
+  padding: 16rpx 32rpx;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 40rpx;
+  margin-bottom: 20rpx;
+  align-self: flex-end;
+}
+
+/* 可滚动卡片区 */
+.card-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+/* 删除旧的 close-row / close-btn */
+
 .card {
-  width: 660rpx;
+  width: 100%;
   background: #fff;
   border-radius: var(--radius-lg);
   padding: 16rpx;
+  box-sizing: border-box;
   box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.18);
 }
 .canvas {
@@ -46,8 +67,9 @@
 .actions {
   display: flex;
   gap: 20rpx;
-  margin-top: 30rpx;
-  width: 660rpx;
+  margin-top: 24rpx;
+  margin-bottom: 8rpx;
+  width: 100%;
 }
 .act {
   flex: 1;
@@ -63,9 +85,3 @@
   color: #fff;
 }
 
-.close {
-  margin-top: 22rpx;
-  color: #fff;
-  font-size: 26rpx;
-  padding: 14rpx 44rpx;
-}

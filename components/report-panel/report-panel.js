@@ -236,7 +236,14 @@ Component({
     },
 
     onClose() {
-      this.triggerEvent('close');
+      // triggerEvent 在部分微信版本不稳定，直接操作当前页面
+      const pages = getCurrentPages();
+      const page = pages[pages.length - 1];
+      if (page && typeof page.onCloseReport === 'function') {
+        page.onCloseReport();
+      } else {
+        this.triggerEvent('close'); // fallback
+      }
     },
     noop() {},
   },

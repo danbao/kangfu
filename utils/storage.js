@@ -17,19 +17,68 @@ function write(key, val) {
 const getExercises = () => read(STORAGE_KEYS.EXERCISES, []);
 const saveExercises = (list) => write(STORAGE_KEYS.EXERCISES, list);
 
-/* ---------- 打卡记录 { date: { exId: true } } ---------- */
+/* ---------- 打卡记录 { date: { exId: number（完成组数） } } ---------- */
+// 兼容旧数据：值为 true 视为 1
+function _count(val) {
+  if (!val) return 0;
+  if (val === true) return 1;
+  return typeof val === 'number' ? val : 0;
+}
+
 const getRecords = () => read(STORAGE_KEYS.RECORDS, {});
+
+function addSet(date, exId) {
+  const r = getRecords();
+  if (!r[date]) r[date] = {};
+  r[date][exId] = _count(r[date][exId]) + 1;
+  write(STORAGE_KEYS.RECORDS, r);
+  return r[date][exId];
+}
+
+function removeSet(date, exId) {
+  const r = getRecords();
+  if (!r[date]) return 0;
+  const next = Math.max(0, _count(r[date][exId]) - 1);
+  if (next === 0) {
+    delete r[date][exId];
+    if (!Object.keys(r[date]).length) delete r[date];
+  } else {
+    r[date][exId] = next;
+  }
+  write(STORAGE_KEYS.RECORDS, r);
+  return next;
+}
+
+// 矩阵视图：点击循环 0 → goalSets → 0
+function cycleSet(date, exId, goalSets) {
+  const r = getRecords();
+  if (!r[date]) r[date] = {};
+  const cur = _count(r[date][exId]);
+  const next = cur >= goalSets ? 0 : goalSets;
+  if (next === 0) {
+    delete r[date][exId];
+    if (!Object.keys(r[date]).length) delete r[date];
+  } else {
+    r[date][exId] = next;
+  }
+  write(STORAGE_KEYS.RECORDS, r);
+  return next;
+}
+
+// 向后兼容旧调用（矩阵 onToggleCell 已迁移，保留避免报错）
 function toggleRecord(date, exId) {
   const r = getRecords();
   if (!r[date]) r[date] = {};
-  if (r[date][exId]) delete r[date][exId];
-  else r[date][exId] = true;
-  // 清理空对象
-  if (!Object.keys(r[date]).length) delete r[date];
+  const cur = _count(r[date][exId]);
+  const next = cur > 0 ? 0 : 1;
+  if (next === 0) { delete r[date][exId]; if (!Object.keys(r[date]).length) delete r[date]; }
+  else r[date][exId] = next;
   write(STORAGE_KEYS.RECORDS, r);
-  return !!(r[date] && r[date][exId]);
+  return next > 0;
 }
-const isDone = (date, exId) => !!(getRecords()[date] && getRecords()[date][exId]);
+
+const getCount = (date, exId) => _count((getRecords()[date] || {})[exId]);
+const isDone = (date, exId, goalSets = 1) => getCount(date, exId) >= goalSets;
 
 // 删除项目时清理其历史打卡
 function cleanRecordsForEx(exId) {
@@ -76,7 +125,7 @@ function saveSettings(patch) {
 module.exports = {
   read, write,
   getExercises, saveExercises,
-  getRecords, toggleRecord, isDone, cleanRecordsForEx,
+  getRecords, addSet, removeSet, cycleSet, toggleRecord, getCount, isDone, cleanRecordsForEx,
   getNotes, getNote, saveNote,
   getRestDays, toggleRestDay, isRestDay,
   getSettings, saveSettings,

@@ -66,6 +66,8 @@
   min-width: 0;
   font-size: 26rpx;
   color: var(--color-text);
+  word-break: break-all;
+  line-height: 1.4;
 }
 /* 拖拽手柄（柔和两列圆点） */
 .drag-handle {
@@ -193,6 +195,10 @@
   position: relative;
 }
 .cell.done .check {
+  background: var(--color-pink);
+  border-color: var(--color-pink-deep);
+}
+.cell.partial .check {
   background: var(--color-pink-light);
   border-color: var(--color-pink);
 }
@@ -203,14 +209,99 @@
   top: 12rpx;
   width: 12rpx;
   height: 7rpx;
-  border-left: 3rpx solid var(--color-pink-deep);
-  border-bottom: 3rpx solid var(--color-pink-deep);
+  border-left: 3rpx solid #fff;
+  border-bottom: 3rpx solid #fff;
   transform: rotate(-45deg);
 }
 .cell.rest .check {
   background: transparent;
   border-style: dashed;
   border-color: #D6D6D6;
+}
+
+/* ---------- 今日视图 ---------- */
+.rest-banner {
+  padding: 20rpx 28rpx;
+  background: var(--color-grey-bg);
+  color: var(--color-text-light);
+  font-size: 26rpx;
+  border-bottom: 1rpx solid var(--color-grey-border);
+}
+.today-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 0 28rpx;
+  border-bottom: 1rpx solid var(--color-grey-border);
+  background: #fff;
+  transition: background 0.15s;
+}
+.today-row.all-done {
+  background: #FFF8FA;
+}
+.today-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.today-ex-name {
+  font-size: 28rpx;
+  color: var(--color-text);
+  word-break: break-all;
+  line-height: 1.4;
+}
+.today-hint {
+  font-size: 22rpx;
+  color: var(--color-text-light);
+}
+/* 组数进度圆圈 */
+.today-progress {
+  width: 80rpx;
+  height: 80rpx;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 3rpx solid var(--color-grey-border);
+  background: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s, border-color 0.18s;
+}
+.today-progress.partial {
+  border-color: var(--color-pink-deep);
+  background: var(--color-pink-light);
+}
+.today-progress.done {
+  background: var(--color-pink);
+  border-color: var(--color-pink-deep);
+}
+.today-progress.rest {
+  border-style: dashed;
+  border-color: #D6D6D6;
+}
+.today-count {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1;
+}
+.today-progress.partial .today-count,
+.today-progress.done .today-count {
+  color: var(--color-pink-deep);
+}
+.today-progress.done .today-count {
+  color: #fff;
+}
+.today-goal {
+  font-size: 20rpx;
+  color: var(--color-text-light);
+  margin-left: 1rpx;
+}
+.today-progress.done .today-goal {
+  color: rgba(255,255,255,0.8);
 }
 
 /* ---------- 拖拽 capture 层 ---------- */
@@ -293,6 +384,19 @@
   border-radius: var(--radius-md);
   font-size: 28rpx;
   color: var(--color-text);
+}
+.goal-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+.goal-input {
+  width: 120rpx;
+  flex: 0 0 auto;
+}
+.goal-unit {
+  font-size: 24rpx;
+  color: var(--color-text-light);
 }
 .ph {
   color: var(--color-text-light);

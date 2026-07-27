@@ -15,9 +15,11 @@ Page({
     CELL_W: 0,
     matrixWidth: 0,
     // 数据
-    exercises: [],   // [{id,name,icon,createdAt,iconUri}]
+    exercises: [],   // [{id,name,icon,dailyGoalSets,repsPerSet,createdAt,iconUri}]
     dates: [],       // [{key,d,weekday,isToday,isRest}]
-    records: {},     // safeRecords: { dateKey: { exId: true|false } }
+    records: {},     // safeRecords: { dateKey: { exId: number } }
+    todayKey: '',    // 今日日期键，今日视图使用
+    todayRecords: {},// 今日各项目完成组数 { exId: number }，今日视图使用
     // 视图与焦点
     viewMode: 'week',
     rangeLabel: '本周',
@@ -44,6 +46,7 @@ Page({
     editVisible: false,
     editMode: 'add',
     editName: '',
+    editGoal: 8,
     editIcon: 'star',
     editingId: '',
     iconChoices: [],
@@ -56,12 +59,12 @@ Page({
       CELL_W: ui.rpx2px(C.CELL_WIDTH_RPX),
     });
     const s = storage.getSettings();
-    this._viewMode = s.viewMode === 'month' ? 'month' : 'week';
+    this._viewMode = s.viewMode === 'month' ? 'month' : (s.viewMode === 'day' ? 'day' : 'week');
     this._focusDate = dateUtil.today();
     this._loaded = false;
     this.setData({
       viewMode: this._viewMode,
-      rangeLabel: this._viewMode === 'month' ? '本月' : '本周',
+      rangeLabel: this._viewMode === 'month' ? '本月' : (this._viewMode === 'day' ? '今日' : '本周'),
     });
     this.refresh(true);
   },
@@ -77,22 +80,47 @@ Page({
       id: e.id,
       name: e.name,
       icon: e.icon,
+      dailyGoalSets: e.dailyGoalSets || 8,
+      repsPerSet: e.repsPerSet || 20,
       createdAt: e.createdAt,
       iconUri: icons.iconUri(e.icon),
     }));
     const restSet = storage.getRestDays();
+    const todayKey = dateUtil.today();
+    const recs = storage.getRecords();
+
+    // 今日视图：只需今日打卡记录，不构建矩阵
+    if (this.data.viewMode === 'day') {
+      // todayRecords: { exId: count }，兼容旧 boolean
+      const raw = recs[todayKey] || {};
+      const todayRecords = {};
+      exercises.forEach((ex) => {
+        const v = raw[ex.id];
+        todayRecords[ex.id] = !v ? 0 : (v === true ? 1 : v);
+      });
+      const ds = statsUtil.dailyStat(todayKey, exercises);
+      this.setData({
+        exercises,
+        todayKey,
+        todayRecords,
+        done: ds.done, total: ds.total, rate: ds.rate, isRest: ds.isRest,
+        rangeRate: ds.rate, rangeLabel: '今日',
+        focusDate: todayKey, focusLabel: '今天',
+      });
+      return;
+    }
+
     const dates = dateUtil.buildDays(this.data.viewMode, restSet);
 
     // safeRecords：保证每个日期都有对象，WXML 直接 records[d][ex] 不报错
-    const recs = storage.getRecords();
     const safe = {};
     dates.forEach((d) => { safe[d.key] = recs[d.key] || {}; });
 
     const matrixWidth = dates.length * this.data.CELL_W;
-    const focus = this._focusDate || dateUtil.today();
+    const focus = this._focusDate || todayKey;
     const ds = statsUtil.dailyStat(focus, exercises);
     const rr = statsUtil.rangeRate(dates, exercises);
-    const focusLabel = focus === dateUtil.today() ? '今天' : dateUtil.prettyDate(focus);
+    const focusLabel = focus === todayKey ? '今天' : dateUtil.prettyDate(focus);
 
     this.setData({
       exercises, dates, records: safe, matrixWidth,
@@ -108,20 +136,51 @@ Page({
 
   // 仅刷新统计数字（打卡后局部更新，不重建矩阵）
   refreshStats() {
-    const focus = this._focusDate;
+    const focus = this.data.viewMode === 'day' ? dateUtil.today() : this._focusDate;
     const ds = statsUtil.dailyStat(focus, this.data.exercises);
-    const rr = statsUtil.rangeRate(this.data.dates, this.data.exercises);
+    const rr = this.data.viewMode === 'day' ? ds.rate : statsUtil.rangeRate(this.data.dates, this.data.exercises);
     this.setData({
       done: ds.done, total: ds.total, rate: ds.rate, isRest: ds.isRest, rangeRate: rr,
     });
   },
 
   /* ---------- 打卡 ---------- */
+
+  // 今日视图：点击 = +1 组
+  onAddSet(e) {
+    const { date, ex } = e.currentTarget.dataset;
+    if (storage.isRestDay(date)) return;
+    const exObj = this.data.exercises.find((x) => x.id === ex);
+    const count = storage.addSet(date, ex);
+    this.setData({
+      ['todayRecords.' + ex]: count,
+      ['records.' + date + '.' + ex]: count,
+    });
+    this.refreshStats();
+    const goal = exObj ? exObj.dailyGoalSets : 8;
+    wx.vibrateShort({ type: count >= goal ? 'medium' : 'light' });
+  },
+
+  // 今日视图：长按 = -1 组
+  onRemoveSet(e) {
+    const { date, ex } = e.currentTarget.dataset;
+    const count = storage.removeSet(date, ex);
+    this.setData({
+      ['todayRecords.' + ex]: count,
+      ['records.' + date + '.' + ex]: count,
+    });
+    this.refreshStats();
+    wx.vibrateShort({ type: 'light' });
+  },
+
+  // 矩阵视图：点击循环 0 ↔ goalSets
   onToggleCell(e) {
     const { date, ex } = e.currentTarget.dataset;
-    if (storage.isRestDay(date)) return; // 休息日不可打卡
-    const nowDone = storage.toggleRecord(date, ex);
-    this.setData({ ['records.' + date + '.' + ex]: nowDone });
+    if (storage.isRestDay(date)) return;
+    const exObj = this.data.exercises.find((x) => x.id === ex);
+    const goal = exObj ? exObj.dailyGoalSets : 1;
+    const count = storage.cycleSet(date, ex, goal);
+    this.setData({ ['records.' + date + '.' + ex]: count });
     this.refreshStats();
     wx.vibrateShort({ type: 'light' });
   },
@@ -131,8 +190,9 @@ Page({
     const mode = e.detail.mode;
     if (mode === this.data.viewMode) return;
     storage.saveSettings({ viewMode: mode });
-    this.setData({ viewMode: mode, rangeLabel: mode === 'month' ? '本月' : '本周' });
-    this.refresh(true);
+    const rangeLabel = mode === 'month' ? '本月' : (mode === 'day' ? '今日' : '本周');
+    this.setData({ viewMode: mode, rangeLabel });
+    this.refresh(mode !== 'day');
   },
 
   /* ---------- 焦点日期（点表头） ---------- */
@@ -228,7 +288,9 @@ Page({
       const [moved] = list.splice(draggingIndex, 1);
       list.splice(targetIndex, 0, moved);
       storage.saveExercises(list.map((e) => ({
-        id: e.id, name: e.name, icon: e.icon, createdAt: e.createdAt,
+        id: e.id, name: e.name, icon: e.icon,
+        dailyGoalSets: e.dailyGoalSets || 8, repsPerSet: e.repsPerSet || 20,
+        createdAt: e.createdAt,
       })));
       wx.vibrateShort({ type: 'light' });
     }
@@ -251,6 +313,7 @@ Page({
       editVisible: true,
       editMode: 'add',
       editName: '',
+      editGoal: 8,
       editIcon: 'star',
       editingId: '',
       iconChoices: this.buildIconChoices('star'),
@@ -265,6 +328,7 @@ Page({
       editVisible: true,
       editMode: 'edit',
       editName: ex.name,
+      editGoal: ex.dailyGoalSets || 8,
       editIcon: ex.icon,
       editingId: id,
       iconChoices: this.buildIconChoices(ex.icon),
@@ -280,6 +344,10 @@ Page({
   onEditName(e) {
     this.setData({ editName: e.detail.value });
   },
+  onEditGoal(e) {
+    const v = parseInt(e.detail.value, 10);
+    this.setData({ editGoal: isNaN(v) || v < 1 ? 1 : v });
+  },
   onPickIcon(e) {
     const key = e.currentTarget.dataset.key;
     const iconChoices = this.data.iconChoices.map((c) => ({ key: c.key, uri: c.uri, selected: c.key === key }));
@@ -291,20 +359,25 @@ Page({
       wx.showToast({ title: '请输入项目名称', icon: 'none' });
       return;
     }
+    const goal = this.data.editGoal || 8;
     const list = this.data.exercises.slice();
     if (this._editMode === 'edit') {
       const ex = list.find((x) => x.id === this.data.editingId);
-      if (ex) { ex.name = name; ex.icon = this.data.editIcon; }
+      if (ex) { ex.name = name; ex.icon = this.data.editIcon; ex.dailyGoalSets = goal; }
     } else {
       list.push({
         id: 'ex_' + Date.now(),
         name: name,
         icon: this.data.editIcon,
+        dailyGoalSets: goal,
+        repsPerSet: 20,
         createdAt: Date.now(),
       });
     }
     storage.saveExercises(list.map((e) => ({
-      id: e.id, name: e.name, icon: e.icon, createdAt: e.createdAt,
+      id: e.id, name: e.name, icon: e.icon,
+      dailyGoalSets: e.dailyGoalSets || 8, repsPerSet: e.repsPerSet || 20,
+      createdAt: e.createdAt,
     })));
     this.setData({ editVisible: false });
     this.refresh();
@@ -323,7 +396,9 @@ Page({
         if (!r.confirm) return;
         const list = this.data.exercises.filter((x) => x.id !== id);
         storage.saveExercises(list.map((e) => ({
-          id: e.id, name: e.name, icon: e.icon, createdAt: e.createdAt,
+          id: e.id, name: e.name, icon: e.icon,
+          dailyGoalSets: e.dailyGoalSets || 8, repsPerSet: e.repsPerSet || 20,
+          createdAt: e.createdAt,
         })));
         storage.cleanRecordsForEx(id);
         this.setData({ editVisible: false });

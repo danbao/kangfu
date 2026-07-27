@@ -16,7 +16,35 @@
   <!-- 工作区（拖拽时关闭纵向滚动） -->
   <scroll-view class="matrix-scroll" scroll-y="{{!isDragging}}" enhanced show-scrollbar="{{false}}">
 
-    <view class="matrix-container">
+    <!-- 今日视图 -->
+    <block wx:if="{{viewMode === 'day'}}">
+      <view wx:if="{{isRest}}" class="rest-banner">🌿 今天是休息日，好好放松吧</view>
+      <view
+        wx:for="{{exercises}}" wx:key="id"
+        class="today-row {{todayRecords[item.id] >= item.dailyGoalSets ? 'all-done' : ''}}"
+        style="height:{{ROW_H}}px"
+        data-date="{{todayKey}}"
+        data-ex="{{item.id}}"
+        bindtap="onAddSet"
+        bindlongpress="onRemoveSet">
+        <view class="ex-icon" style="background-image:url('{{item.iconUri}}')"></view>
+        <view class="today-info">
+          <text class="ex-name today-ex-name">{{item.name}}</text>
+          <text class="today-hint">每组 {{item.repsPerSet}} 次</text>
+        </view>
+        <view class="today-progress {{todayRecords[item.id] >= item.dailyGoalSets ? 'done' : (todayRecords[item.id] > 0 ? 'partial' : '')}} {{isRest ? 'rest' : ''}}">
+          <text class="today-count">{{todayRecords[item.id] || 0}}</text>
+          <text class="today-goal">/{{item.dailyGoalSets}}</text>
+        </view>
+      </view>
+      <view class="add-row" style="height:{{ROW_H}}px" bindtap="onAddExercise">
+        <text class="add-plus">+</text>
+        <text class="add-text">新增项目</text>
+      </view>
+    </block>
+
+    <!-- 矩阵视图（周/月） -->
+    <view class="matrix-container" wx:else>
 
       <!-- 左列：训练项目 -->
       <view class="left-panel">
@@ -31,7 +59,7 @@
           bindtap="onEditExercise"
           bindlongpress="onRowLongPress">
           <view class="ex-icon" style="background-image:url('{{item.iconUri}}')"></view>
-          <text class="ex-name ellipsis">{{item.name}}</text>
+          <text class="ex-name">{{item.name}}</text>
           <view class="drag-handle"></view>
         </view>
 
@@ -74,7 +102,7 @@
               class="matrix-row" style="height:{{ROW_H}}px">
               <view
                 wx:for="{{dates}}" wx:for-item="dt" wx:key="key"
-                class="cell {{records[dt.key][item.id] ? 'done' : ''}} {{dt.isRest ? 'rest' : ''}} {{dt.isToday ? 'is-today-col' : ''}}"
+                class="cell {{records[dt.key][item.id] >= item.dailyGoalSets ? 'done' : (records[dt.key][item.id] > 0 ? 'partial' : '')}} {{dt.isRest ? 'rest' : ''}} {{dt.isToday ? 'is-today-col' : ''}}"
                 style="width:{{CELL_W}}px"
                 data-date="{{dt.key}}"
                 data-ex="{{item.id}}"
@@ -132,6 +160,19 @@
         value="{{editName}}"
         bindinput="onEditName"
         maxlength="12"></input>
+
+      <view class="edit-label">每日目标组数</view>
+      <view class="goal-row">
+        <input
+          class="edit-input goal-input"
+          type="number"
+          placeholder="8"
+          placeholder-class="ph"
+          value="{{editGoal}}"
+          bindinput="onEditGoal"
+          maxlength="3"></input>
+        <text class="goal-unit">组（每组 20 次）</text>
+      </view>
 
       <view class="edit-label">选择图标</view>
       <view class="icon-grid">

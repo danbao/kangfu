@@ -1,12 +1,14 @@
 <view class="mask {{visible ? 'show' : ''}}" bindtap="onClose">
+  <view class="top-close">✕ 关闭</view>
   <view class="wrap" catchtap="noop">
-    <view class="card">
-      <canvas type="2d" id="reportCanvas" class="canvas"></canvas>
-    </view>
-    <view class="actions">
-      <view class="act" bindtap="onSave">保存到相册</view>
-      <view class="act primary" bindtap="onShare">分享图片</view>
-    </view>
-    <view class="close" catchtap="onClose">关闭</view>
+    <scroll-view class="card-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="card">
+        <canvas type="2d" id="reportCanvas" class="canvas"></canvas>
+      </view>
+      <view class="actions">
+        <view class="act" bindtap="onSave">保存到相册</view>
+        <view class="act primary" bindtap="onShare">分享图片</view>
+      </view>
+    </scroll-view>
   </view>
 </view>

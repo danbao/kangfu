@@ -19,6 +19,7 @@
 
   <view class="stats-actions">
     <view class="seg">
+      <view class="seg-item {{viewMode === 'day' ? 'on' : ''}}" data-mode="day" bindtap="onTapView">今</view>
       <view class="seg-item {{viewMode === 'week' ? 'on' : ''}}" data-mode="week" bindtap="onTapView">周</view>
       <view class="seg-item {{viewMode === 'month' ? 'on' : ''}}" data-mode="month" bindtap="onTapView">月</view>
     </view>
